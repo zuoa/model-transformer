@@ -1,0 +1,8 @@
+# App runtime (lightweight — enough to boot the server and exercise the
+# job / SSE / download plumbing without the heavy conversion stack).
+# Install this alone for plumbing tests/CI; add requirements-convert.txt
+# (and, in Docker, the rknn-toolkit2 wheel) for real conversions.
+fastapi>=0.110
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
+pydantic>=2.5

@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Local runtime artifacts
+work/
+work_test/
+*.onnx
+*.rknn
+*.pt
+*.pth
+!**/wheels/*.whl
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+.env

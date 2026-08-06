@@ -1,0 +1,14 @@
+# Conversion stack. Pins are chosen to be compatible with rknn-toolkit2 v2.3.2
+# (which constrains torch<=2.4.0, numpy<=1.26.4, protobuf 4.21.6..4.25.4). On the
+# Mac dev box only the ultralytics/ONNX path runs; the same pins still work there.
+ultralytics>=8.2.0
+torch>=2.0.0,<=2.4.0
+onnxslim>=0.1.0
+opencv-python>=4.5.5.64
+onnx>=1.16.1
+onnxruntime>=1.17.0
+numpy<=1.26.4
+protobuf>=4.21.6,<=4.25.4
+# rknn-toolkit2 is NOT on PyPI. In Docker the v2.3.2 cp312 wheel is vendored and
+# installed from disk; it brings its own constraints that the pins above satisfy.
+# Use opencv-python (not headless) because the rknn wheel declares it as a dep.

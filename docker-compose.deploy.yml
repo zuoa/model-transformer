@@ -1,0 +1,26 @@
+# Deploy compose: pulls the prebuilt image from GHCR (no local build).
+#
+#   docker compose -f docker-compose.deploy.yml up -d
+#
+# For local dev/build use docker-compose.yml instead.
+#
+# Private package? Authenticate first:
+#   echo "<GHCR_PAT>" | docker login ghcr.io -u zuoa --password-stdin
+# (A public package needs no login.)
+
+services:
+  transformer:
+    image: ghcr.io/zuoa/model-transformer:latest
+    pull_policy: always
+    container_name: yolo-model-transformer
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist converted artifacts + uploaded models on the host.
+      - ./work:/data/work
+    environment:
+      - MT_MAX_MODEL_MB=2048
+      - MT_MAX_CALIB_MB=512
+      - MT_JOB_TTL_SECONDS=3600
+      - MT_RKNN_CONCURRENCY=1
+    restart: unless-stopped

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YOLO Model Transformer</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <main class="card">
+    <header>
+      <h1>YOLO Model Transformer</h1>
+      <p class="sub">Convert YOLO <code>.pt</code> / <code>.onnx</code> to ONNX or RKNN, with conversion &amp; quantization options.</p>
+    </header>
+
+    <div id="availability" class="availability"></div>
+
+    <form id="job-form">
+      <fieldset>
+        <legend>Pipeline</legend>
+        <label><input type="radio" name="pipeline" value="pt_to_onnx" checked /> PT → ONNX</label>
+        <label><input type="radio" name="pipeline" value="pt_to_rknn" /> PT → RKNN <span class="tag tag-warn">Linux</span></label>
+        <label><input type="radio" name="pipeline" value="onnx_to_rknn" /> ONNX → RKNN <span class="tag tag-warn">Linux</span></label>
+      </fieldset>
+
+      <div id="rknn-warning" class="warn hidden">
+        <strong>ONNX → RKNN accuracy warning.</strong> If this ONNX is a stock YOLOv8/v11
+        export that still contains the Detect head's DFL / decode layer, INT8 quantization
+        will collapse detection accuracy. Use a <em>head-stripped</em> ONNX, or switch to
+        the PT → RKNN pipeline (which handles the head correctly).
+      </div>
+
+      <label class="field">
+        <span>Model file</span>
+        <input type="file" id="model" name="model" required />
+        <small id="model-hint">Accepts <code>.pt</code> for PT pipelines, <code>.onnx</code> for ONNX→RKNN.</small>
+      </label>
+
+      <fieldset id="params" class="params-grid"></fieldset>
+
+      <label class="field hidden" id="calib-field">
+        <span>Calibration images (zip) <span class="req">required for INT8</span></span>
+        <input type="file" id="calib" name="calib" accept=".zip" />
+        <small>A zip of ~20–100 RGB images. Used to calibrate INT8 quantization.</small>
+      </label>
+
+      <div class="actions">
+        <button type="submit" id="submit">Convert</button>
+        <span id="submit-msg" class="muted"></span>
+      </div>
+    </form>
+
+    <section id="output" class="hidden">
+      <h2>Job <code id="job-id"></code></h2>
+      <div class="progress"><div id="progress-bar"></div></div>
+      <div id="status-line" class="status"></div>
+      <pre id="log" class="log"></pre>
+      <a id="download" class="download hidden" href="#">Download result</a>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>

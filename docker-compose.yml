@@ -1,0 +1,27 @@
+services:
+  transformer:
+    build: .
+    image: yolo-model-transformer
+    ports:
+      - "8000:8000"
+    volumes:
+      # Converted artifacts + uploaded models persist on the host.
+      - ./work:/data/work
+    environment:
+      - MT_MAX_MODEL_MB=2048
+      - MT_MAX_CALIB_MB=512
+      - MT_JOB_TTL_SECONDS=3600
+      - MT_RKNN_CONCURRENCY=1
+    restart: unless-stopped
+
+  # Dev profile: live-reload the source from the host.
+  #   docker compose --profile dev up
+  dev:
+    build: .
+    profiles: ["dev"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+      - ./work:/data/work
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
