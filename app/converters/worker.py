@@ -46,7 +46,12 @@ def _prepare_calibration_if_needed(cfg: dict, work_dir: Path) -> None:
     zip_path = cfg.get("calib_zip")
     if not zip_path or not Path(zip_path).exists():
         raise ValueError("INT8 quantization requires a calibration zip, but none was provided.")
-    calib_dir, dataset_txt = calibration.prepare(Path(zip_path), work_dir)
+    if cfg["pipeline"] == "pt_to_rknn":
+        # ultralytics builds its calibration list from a YOLO dataset YAML.
+        calib_dir, dataset_txt, data_yaml = calibration.prepare_with_yaml(Path(zip_path), work_dir)
+        cfg["calib_yaml"] = str(data_yaml)
+    else:  # onnx_to_rknn -> direct toolkit wants the image-list txt
+        calib_dir, dataset_txt = calibration.prepare(Path(zip_path), work_dir)
     cfg["calib_dir"] = str(calib_dir)
     cfg["dataset_txt"] = str(dataset_txt)
 
@@ -99,8 +104,11 @@ def main(argv: list[str]) -> int:
         progress.fail(repr(exc), traceback.format_exc())
         return 1
 
-    # Ensure the artifact lives in the work dir and report it.
+    # Ensure the artifact is a real file before reporting success.
     result = Path(result)
+    if not result.is_file():
+        progress.fail(f"converter did not produce a file: {result}")
+        return 1
     progress.done(result.name)
     return 0
 

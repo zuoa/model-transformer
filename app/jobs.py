@@ -194,7 +194,7 @@ def _handle_line(job: Job, text: str) -> None:
 
 
 def _finalize(job: Job, rc: int) -> None:
-    if rc == 0 and job.result_name and (job.work_dir / job.result_name).exists():
+    if rc == 0 and job.result_name and (job.work_dir / job.result_name).is_file():
         job.status = "success"
     else:
         job.status = "failed"

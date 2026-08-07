@@ -8,6 +8,7 @@ venv/
 # Local runtime artifacts
 work/
 work_test/
+work_test2/
 *.onnx
 *.rknn
 *.pt

@@ -129,7 +129,7 @@ async def job_download(job_id: str):
     if not job or job.status != "success" or not job.result_name:
         raise HTTPException(status_code=404, detail="result not available")
     path = job.work_dir / job.result_name
-    if not path.exists():
+    if not path.is_file():
         raise HTTPException(status_code=404, detail="result file missing")
     return FileResponse(str(path), filename=job.result_name)
 
