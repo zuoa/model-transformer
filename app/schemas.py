@@ -45,8 +45,8 @@ class JobParams(BaseModel):
     # --- rknn (shared) ---
     target_platform: Optional[str] = None
 
-    # --- pt -> rknn (ultralytics native format='rknn') ---
-    # 8 = INT8 (needs calibration), 16 = FP16 (w16a16), None/0 = FP32
+    # --- pt -> rknn (DFL-stripped Detect + rknn-toolkit2) ---
+    # 8 = INT8 (needs calibration), 16 = FP16, None/0 = FP32
     quantize: Optional[int] = Field(default=None)
 
     # --- onnx -> rknn (direct toolkit) ---

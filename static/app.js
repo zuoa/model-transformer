@@ -101,8 +101,9 @@ function renderParams() {
 
 function refreshConditional() {
   const pipeline = currentPipeline();
-  // ONNX->RKNN detect-head warning.
+  // Pipeline-specific Detect-head notes.
   $("rknn-warning").classList.toggle("hidden", pipeline !== "onnx_to_rknn");
+  $("pt-rknn-note").classList.toggle("hidden", pipeline !== "pt_to_rknn");
   // Calibration field: visible only when INT8 is active.
   let int8 = false;
   if (pipeline === "pt_to_rknn") {

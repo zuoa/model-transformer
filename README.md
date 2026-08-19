@@ -4,9 +4,10 @@ A small web app to convert YOLO models to **ONNX** or **RKNN**, with conversion
 and quantization options (including INT8 calibration for RKNN).
 
 - **PT → ONNX** — via `ultralytics` (opset, simplify, dynamic, half, imgsz, batch).
-- **PT → RKNN** — via `ultralytics` native `format="rknn"` (target platform,
-  INT8/FP16/FP, calibration). Recommended path — handles the YOLO Detect head
-  correctly so INT8 accuracy doesn't collapse.
+- **PT → RKNN** — strips the YOLO Detect DFL / decode head (airockchip /
+  rknn_model_zoo 9-output layout), then `rknn-toolkit2` (target platform,
+  INT8/FP16/FP, calibration). Required so the board demo does not collapse
+  every box to class 0.
 - **ONNX → RKNN** — via `rknn-toolkit2` directly, with the full quantization
   parameter set (quantized dtype/method/algorithm, mean/std). Bring a
   **head-stripped** ONNX; see the in-app warning.
@@ -103,9 +104,13 @@ MT_MOCK=1 uvicorn app.main:app --reload  # all pipelines return mock output
 
 ## Caveats
 
-- **Detect-head INT8 accuracy**: a stock YOLOv8/v11 ONNX (with the DFL/decode
-  layer) quantized to INT8 via ONNX→RKNN loses accuracy. Use PT→RKNN, or supply
-  a head-stripped ONNX. The UI warns about this on the ONNX→RKNN pipeline.
+- **Detect-head / class-0**: a stock YOLOv8/v11 export is one tensor
+  `[1, 4+nc, 8400]` with DFL already in the graph. rknn_model_zoo post-process
+  expects 3 scales × (box 64-ch + class `nc`-ch [+ score-sum]). The mismatch
+  (or INT8 sharing one scale between box coords and class scores, or a YOLOv5
+  `5+nc` decoder) shows up as “only class 0 is recognized”. PT→RKNN strips
+  DFL; ONNX→RKNN needs a head-stripped ONNX. Set `OBJ_CLASS_NUM` to the
+  model’s `nc`.
 - **`dynamic=True` is rejected for RKNN** (fixed input shape required), and
   **FP16 + INT8 is rejected** (use `quantize=16` / `quantized_dtype=w16a16`).
 - **RKNN is x86_64-Linux-only.** On macOS, run it inside the Docker container.

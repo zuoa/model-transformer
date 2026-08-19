@@ -1,15 +1,11 @@
 """Calibration dataset preparation for RKNN INT8 quantization.
 
-Two entry points:
+* :func:`prepare` — unzip images and write ``dataset.txt`` (absolute paths,
+  one per line) for ``rknn.build(do_quantization=True, dataset=...)``.
+  Used by both PT->RKNN and ONNX->RKNN.
 
-* :func:`prepare` — for the direct ONNX->RKNN path (``rknn.py``). Builds
-  ``dataset.txt`` (one image path per line), which is what
-  ``rknn.build(do_quantization=True, dataset=...)`` expects.
-
-* :func:`prepare_with_yaml` — for the ultralytics PT->RKNN path. ultralytics
-  builds its calibration image list from a *YOLO dataset YAML*, so we lay the
-  images out as a minimal detection dataset (``images/`` + empty ``labels/``)
-  and write ``data.yaml`` alongside.
+* :func:`prepare_with_yaml` — leftover helper that also writes a YOLO
+  ``data.yaml``. Not used by the current converters.
 """
 from __future__ import annotations
 

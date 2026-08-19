@@ -24,10 +24,19 @@
       </fieldset>
 
       <div id="rknn-warning" class="warn hidden">
-        <strong>ONNX → RKNN accuracy warning.</strong> If this ONNX is a stock YOLOv8/v11
-        export that still contains the Detect head's DFL / decode layer, INT8 quantization
-        will collapse detection accuracy. Use a <em>head-stripped</em> ONNX, or switch to
-        the PT → RKNN pipeline (which handles the head correctly).
+        <strong>ONNX → RKNN accuracy warning.</strong> A stock YOLOv8/v11 ONNX still
+        contains the Detect head's DFL / decode and a single <code>[1, 4+nc, 8400]</code>
+        output. On the board that is usually parsed as “only class 0 works”: class
+        scores share the box INT8 scale (or a YOLOv5/objectness decoder skips real
+        class 0). Use a <em>head-stripped</em> ONNX, or switch to PT → RKNN.
+      </div>
+      <div id="pt-rknn-note" class="warn hidden">
+        <strong>PT → RKNN Detect head.</strong> DFL / <code>dist2bbox</code> are stripped
+        so the RKNN has the rknn_model_zoo layout: 3 scales ×
+        (box 64-ch + class <code>nc</code>-ch + score-sum). Set
+        <code>OBJ_CLASS_NUM</code> in <code>postprocess.h</code> to this model’s class
+        count (logged during conversion). Do not use a YOLOv5 decoder
+        (<code>5+nc</code> with objectness) on this output.
       </div>
 
       <label class="field">

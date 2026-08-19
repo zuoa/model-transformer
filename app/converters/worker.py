@@ -46,12 +46,8 @@ def _prepare_calibration_if_needed(cfg: dict, work_dir: Path) -> None:
     zip_path = cfg.get("calib_zip")
     if not zip_path or not Path(zip_path).exists():
         raise ValueError("INT8 quantization requires a calibration zip, but none was provided.")
-    if cfg["pipeline"] == "pt_to_rknn":
-        # ultralytics builds its calibration list from a YOLO dataset YAML.
-        calib_dir, dataset_txt, data_yaml = calibration.prepare_with_yaml(Path(zip_path), work_dir)
-        cfg["calib_yaml"] = str(data_yaml)
-    else:  # onnx_to_rknn -> direct toolkit wants the image-list txt
-        calib_dir, dataset_txt = calibration.prepare(Path(zip_path), work_dir)
+    # Both RKNN pipelines now go through rknn-toolkit2, which wants dataset.txt.
+    calib_dir, dataset_txt = calibration.prepare(Path(zip_path), work_dir)
     cfg["calib_dir"] = str(calib_dir)
     cfg["dataset_txt"] = str(dataset_txt)
 

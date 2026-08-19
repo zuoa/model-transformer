@@ -60,11 +60,13 @@ converter code, emit progress through `progress.log/progress/done`, never
 **Three pipelines → three converter modules**, dispatched by `pipeline` string
 in `worker.dispatch`:
 - `pt_to_onnx` → `onnx.py` (ultralytics `format="onnx"`)
-- `pt_to_rknn` → `ultralytics_rknn.py` (ultralytics native `format="rknn"` — **the
-  recommended RKNN path** because it configures the YOLO Detect head correctly)
+- `pt_to_rknn` → `ultralytics_rknn.py` (strips DFL / `dist2bbox` from Detect and
+  emits the rknn_model_zoo 9-output layout, then `rknn-toolkit2`). Official
+  ultralytics `format="rknn"` is **not** used — that path keeps a single
+  `[1, 4+nc, 8400]` tensor and the board demo then reports only class 0.
 - `onnx_to_rknn` → `rknn.py` (direct `rknn-toolkit2`, full param set). User owns
   head correctness — the UI warns that a stock YOLOv8/v11 ONNX INT8-quantized
-  this way loses accuracy.
+  this way loses accuracy / collapses to class 0.
 
 **`app/schemas.py` is the single source of truth for valid parameter
 combinations.** Mutual-exclusion rules are enforced with Pydantic
@@ -73,10 +75,9 @@ unknown `target_platform`, missing target for RKNN) are rejected at job creation
 — never after a multi-minute build. `is_int8()` drives whether calibration is
 required (checked server-side in `app/main.py`).
 
-**Calibration differs by pipeline.** `calibration.prepare` unzips images and
-writes `dataset.txt` (absolute paths, one per line) — used by `rknn.py`'s
-`build(dataset=...)`. For the ultralytics RKNN path the *directory* is passed as
-`data=` instead. Worker calls `prepare` only for INT8 jobs before dispatch.
+**Calibration.** `calibration.prepare` unzips images and writes `dataset.txt`
+(absolute paths, one per line) for `rknn.build(dataset=...)`. Both RKNN
+pipelines use this. Worker calls `prepare` only for INT8 jobs before dispatch.
 
 **Concurrency & cleanup.** RKNN builds are memory-heavy, so a module-level
 `asyncio.Semaphore(RKNN_CONCURRENCY=1)` serializes them (`jobs.py`); ONNX exports
